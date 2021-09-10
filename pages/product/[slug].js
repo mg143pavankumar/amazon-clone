@@ -13,14 +13,21 @@ import {
   ListItem,
   Typography,
 } from "@material-ui/core";
-import { data } from "../../utils/data";
+// import { data } from "../../utils/data";
 import useStyles from "../../utils/style";
+import Product from "../../models/Product";
+import db from "../../utils/db";
 
-export default function ProductScreen() {
+export default function ProductScreen(props) {
   const classes = useStyles();
-  const router = useRouter();
-  const { slug } = router.query;
-  const product = data.products.find((a) => a.slug === slug);
+
+  // for static page we use following
+  // const router = useRouter();
+  // const { slug } = router.query;
+  // const product = data.products.find((a) => a.slug === slug);
+
+  // for dynamic page
+  const { product } = props;
 
   if (!product) {
     return <div>Page Not Found</div>;
@@ -107,4 +114,20 @@ export default function ProductScreen() {
       </Grid>
     </Layout>
   );
+}
+
+// fetching a particular data from the server
+export async function getServerSideProps(context) {
+  const { params } = context;
+  const { slug } = params;
+
+  await db.connect();
+  const product = await Product.findOne({ slug }).lean();
+  await db.disconnect();
+
+  return {
+    props: {
+      product: db.convertDocToObj(product),
+    },
+  };
 }
