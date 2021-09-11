@@ -46,7 +46,7 @@ const LoginScreen = () => {
           </ListItem>
 
           <ListItem>
-            Don't have an accout? &nbsp;{" "}
+            Don't have an accout? &nbsp;
             <NextLink href="/register" passHref>
               <Link> Register</Link>
             </NextLink>
