@@ -14,7 +14,7 @@ import useStyles from "../utils/style";
 const LoginScreen = () => {
   const classes = useStyles();
   return (
-    <Layout>
+    <Layout title = "Login">
       <form className={classes.form}>
         <Typography component="h1" variant="h1">
           Login
