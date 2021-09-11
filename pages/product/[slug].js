@@ -1,4 +1,4 @@
-// import { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import React, { useContext } from "react";
 import Layout from "../../components/Layout";
 
@@ -21,11 +21,11 @@ import { Store } from "../../utils/Store";
 import axios from "axios";
 
 export default function ProductScreen(props) {
-  const { dispatch } = useContext(Store);
+  const router = useRouter();
+  const { state, dispatch } = useContext(Store);
   const classes = useStyles();
 
   // for static page we use following
-  // const router = useRouter();
   // const { slug } = router.query;
   // const product = data.products.find((a) => a.slug === slug);
 
@@ -37,14 +37,18 @@ export default function ProductScreen(props) {
   }
 
   const addToCartHandler = async () => {
+    const exitItem = state.cart.cartItems.find((x) => x._id === product._id);
+    const quantity = exitItem ? exitItem.quantity + 1 : 1;
+
     const { data } = await axios.get(`/api/products/${product._id}`);
 
-    if (data.countInStock <= 0) {
+    if (data.countInStock < quantity) {
       window.alert("Sorry. Product is out of stock");
       return;
     }
 
-    dispatch({ type: "CART_ADD_ITEM", payload: { ...product, quantity: 1 } });
+    dispatch({ type: "CART_ADD_ITEM", payload: { ...product, quantity } });
+    router.push("/cart");
   };
 
   return (
