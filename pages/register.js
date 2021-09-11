@@ -14,7 +14,7 @@ import useStyles from "../utils/style";
 const RegisterScreen = () => {
   const classes = useStyles();
   return (
-    <Layout>
+    <Layout title = "Register">
       <form className={classes.form}>
         <Typography component="h1" variant="h1">
           Register
