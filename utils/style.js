@@ -32,6 +32,11 @@ const useStyles = makeStyles({
     marginTop: 10,
     marginBottom: 20,
   },
+
+  form: {
+    maxWidth: 800,
+    margin: "0 auto",
+  },
 });
 
 export default useStyles;
