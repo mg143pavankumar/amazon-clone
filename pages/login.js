@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React, { useState, useContext } from "react";
 import NextLink from "next/link";
 import Layout from "../components/Layout";
 import {
@@ -10,9 +10,22 @@ import {
   Link,
 } from "@material-ui/core";
 import useStyles from "../utils/style";
-import axios from 'axios';
+import axios from "axios";
+import { Store } from "../utils/Store";
+import { useRouter } from "next/router";
+import Cookies from "js-cookie";
 
 const LoginScreen = () => {
+  const router = useRouter();
+  const { state, dispatch } = useContext(Store);
+  const { userInfo } = state;
+  const { redirect } = router.query; // login?redirect=/shipping
+
+  // check user for existence
+  if (userInfo) {
+    router.push("/");
+  }
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,17 +34,22 @@ const LoginScreen = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    try{
-      const {data} = await axios.post("/api/users/login", {email, password});
-      alert("Successfully logged in");
-    }catch(err){
+    try {
+      const { data } = await axios.post("/api/users/login", {
+        email,
+        password,
+      });
+
+      dispatch({ type: "USER_LOGIN", payload: data });
+      Cookies.set("userInfo", data);
+      router.push(redirect || "/");
+    } catch (err) {
       alert(err.response.data ? err.response.data.message : err.message);
     }
-
-  }
+  };
   return (
-    <Layout title = "Login">
-      <form onSubmit = {submitHandler} className={classes.form}>
+    <Layout title="Login">
+      <form onSubmit={submitHandler} className={classes.form}>
         <Typography component="h1" variant="h1">
           Login
         </Typography>
@@ -43,7 +61,7 @@ const LoginScreen = () => {
               fullWidth
               id="email"
               label="Email"
-              onChange = {e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </ListItem>
           <ListItem>
@@ -53,7 +71,7 @@ const LoginScreen = () => {
               fullWidth
               id="password"
               label="Password"
-              onChange = {e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </ListItem>
 
