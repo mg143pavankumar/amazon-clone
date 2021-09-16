@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import NextLink from "next/link";
 import Layout from "../components/Layout";
 import {
@@ -14,26 +14,30 @@ import axios from "axios";
 import { Store } from "../utils/Store";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
+import { Controller, useForm } from "react-hook-form";
 
 const LoginScreen = () => {
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+
   const router = useRouter();
   const { state, dispatch } = useContext(Store);
   const { userInfo } = state;
   const { redirect } = router.query; // login?redirect=/shipping
 
   // check user for existence
-  if (userInfo) {
-    router.push("/");
-  }
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  useEffect(() => {
+    if (userInfo) {
+      router.push("/");
+    }
+  }, []);
 
   const classes = useStyles();
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
+  const submitHandler = async ({ email, password }) => {
     try {
       const { data } = await axios.post("/api/users/login", {
         email,
@@ -49,29 +53,67 @@ const LoginScreen = () => {
   };
   return (
     <Layout title="Login">
-      <form onSubmit={submitHandler} className={classes.form}>
+      <form onSubmit={handleSubmit(submitHandler)} className={classes.form}>
         <Typography component="h1" variant="h1">
           Login
         </Typography>
         <List>
           <ListItem>
-            <TextField
-              inputProps={{ type: "email" }}
-              variant="outlined"
-              fullWidth
-              id="email"
-              label="Email"
-              onChange={(e) => setEmail(e.target.value)}
+            <Controller
+              name="email"
+              control={control}
+              defaultValue=""
+              rules={{
+                required: true,
+                pattern: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
+              }}
+              render={({ field }) => (
+                <TextField
+                  inputProps={{ type: "email" }}
+                  error={Boolean(errors.email)}
+                  helperText={
+                    errors.email
+                      ? errors.email.type === "pattern"
+                        ? "Email is not valid"
+                        : "Email is required"
+                      : ""
+                  }
+                  variant="outlined"
+                  fullWidth
+                  id="email"
+                  label="Email"
+                  {...field}
+                />
+              )}
             />
           </ListItem>
           <ListItem>
-            <TextField
-              inputProps={{ type: "password" }}
-              variant="outlined"
-              fullWidth
-              id="password"
-              label="Password"
-              onChange={(e) => setPassword(e.target.value)}
+            <Controller
+              name="password"
+              control={control}
+              defaultValue=""
+              rules={{
+                required: true,
+                minLength: 6,
+              }}
+              render={({ field }) => (
+                <TextField
+                  inputProps={{ type: "password" }}
+                  error={Boolean(errors.password)}
+                  helperText={
+                    errors.password
+                      ? errors.password.type === "minLength"
+                        ? "Password is not valid"
+                        : "Password is required"
+                      : ""
+                  }
+                  variant="outlined"
+                  fullWidth
+                  id="password"
+                  label="Password"
+                  {...field}
+                />
+              )}
             />
           </ListItem>
 
@@ -82,8 +124,8 @@ const LoginScreen = () => {
           </ListItem>
 
           <ListItem>
-            Do not have an accout? &nbsp;
-            <NextLink href="/register" passHref>
+            Do not have an accout?
+            <NextLink href={`/register?redirect=${redirect || "/"}`} passHref>
               <Link> Register</Link>
             </NextLink>
           </ListItem>
