@@ -15,6 +15,7 @@ import { Store } from "../utils/Store";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
 import { Controller, useForm } from "react-hook-form";
+import { useSnackbar } from "notistack";
 
 const LoginScreen = () => {
   const {
@@ -22,6 +23,9 @@ const LoginScreen = () => {
     control,
     formState: { errors },
   } = useForm();
+
+  // for showing message on top of the screen
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const router = useRouter();
   const { state, dispatch } = useContext(Store);
@@ -38,6 +42,7 @@ const LoginScreen = () => {
   const classes = useStyles();
 
   const submitHandler = async ({ email, password }) => {
+    closeSnackbar();
     try {
       const { data } = await axios.post("/api/users/login", {
         email,
@@ -48,7 +53,10 @@ const LoginScreen = () => {
       Cookies.set("userInfo", data);
       router.push(redirect || "/");
     } catch (err) {
-      alert(err.response.data ? err.response.data.message : err.message);
+      enqueueSnackbar(
+        err.response.data ? err.response.data.message : err.message,
+        { variant: "error" }
+      );
     }
   };
   return (
